@@ -1,59 +1,54 @@
 import streamlit as st
-import os
-import json
-from datetime import datetime
+import google.generativeai as genai
 from PIL import Image
-from google.cloud import vision
-from google.oauth2 import service_account
+import os
+from datetime import datetime
 
-st.set_page_config(page_title="24시간 한자 판독기", page_icon="🈩")
-st.title("📱 24/7 전서체·초서체 판독기")
+st.set_page_config(page_title="24시간 전서체 AI 판독기", page_icon="🈩")
+st.title("📱 24/7 전서체·초서체 AI 판독기 (Gemini Vision)")
 
-# --- 1. [최종 대안] 원본 JSON 통째로 읽어오기 ---
-if "google_json" in st.secrets:
-    # 문자열 기호 수정 없이, 안전하게 보호된 원본 JSON을 그대로 딕셔너리로 변환합니다.
-    info = json.loads(st.secrets["google_json"])
-    credentials = service_account.Credentials.from_service_account_info(info)
-    client = vision.ImageAnnotatorClient(credentials=credentials)
+# --- Gemini API 키 설정 (단순 문자열 키) ---
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
-    client = vision.ImageAnnotatorClient()
+    st.error("Streamlit Secrets에 GEMINI_API_KEY를 설정해 주세요.")
 
-# --- 2. 스마트폰 전용 화면 구성 ---
-st.write("야외나 외부에서 사진을 찍어 올리면 구글 AI가 즉시 판독하고 데이터를 저장합니다.")
+st.write("Gemini 시각 지능 모델이 전서체, 초서체, 도장의 한자를 정밀 분석합니다.")
 
 uploaded_file = st.file_uploader("📷 한자/도장 사진 촬영 또는 업로드", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="촬영된 이미지", use_container_width=True)
-    
-    # 임시 저장 및 API 전달
-    temp_path = "temp_upload.png"
-    image.save(temp_path)
 
-    with open(temp_path, "rb") as image_file:
-        content = image_file.read()
+    if st.button("🔍 Gemini AI 정밀 분석"):
+        with st.spinner("Gemini가 자형 구조와 부수를 시각적으로 분석 중입니다..."):
+            try:
+                # Gemini 시각 지능 모델 호출
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                prompt = """
+                당신은 고문서 및 전서체, 초서체, 인장(도장) 한자 전문가입니다.
+                업로드된 이미지를 정밀 분석하여 다음 형식으로 답변해 주세요:
+                
+                1. **추측 한자 (정자/楷書):** [가장 유력한 한자 1~2개]
+                2. **자형 및 부수 구조 분석:** [좌우/위아래 구성 요소 및 전서체 특성 설명]
+                3. **글자의 기본 의미:** [한자 뜻 풀이]
+                """
+                
+                response = model.generate_content([prompt, image])
+                st.success("✅ **Gemini AI 판독 완료!**")
+                st.markdown(response.text)
+                
+            except Exception as e:
+                st.error(f"분석 중 오류가 발생했습니다: {e}")
 
-    vision_image = vision.Image(content=content)
-    
-    # AI 판독 수행
-    with st.spinner("구글 AI가 분석 중입니다..."):
-        response = client.document_text_detection(image=vision_image)
-        
-    predicted_text = ""
-    if response.text_annotations:
-        predicted_text = response.text_annotations[0].description.strip()
-        st.success(f"🔍 **AI 추측 결과:** `{predicted_text}`")
-    else:
-        st.warning("인식된 글자가 없습니다. 정답을 직접 입력해 주세요.")
-
-    # 사용자 정답 확인 및 축적
+    # 데이터 축적 파트
     st.markdown("---")
-    correct_label = st.text_input("📝 정답 한자 확인/수정", value=predicted_text)
+    correct_label = st.text_input("📝 최종 정답 한자 입력 (내 데이터셋 저장용)")
 
     if st.button("💾 데이터베이스에 영구 축적"):
         if correct_label.strip():
-            # 저장 폴더 생성
             dataset_dir = "./my_accumulated_dataset"
             char_dir = os.path.join(dataset_dir, correct_label.strip())
             os.makedirs(char_dir, exist_ok=True)
