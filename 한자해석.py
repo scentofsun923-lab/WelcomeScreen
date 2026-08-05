@@ -13,6 +13,10 @@ st.title("📱 24/7 전서체·초서체 한자 판독 & 데이터 축적")
 if "gcp_service_account" in st.secrets:
     # 클라우드 서버 환경
     info = dict(st.secrets["gcp_service_account"])
+
+     # 텍스트로 인식된 '\n'을 실제 줄바꿈으로 변환 (이 줄을 추가!)
+    info["private_key"] = info["private_key"].replace('\\n', '\n')
+    
     credentials = service_account.Credentials.from_service_account_info(info)
     client = vision.ImageAnnotatorClient(credentials=credentials)
 else:
