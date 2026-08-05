@@ -25,7 +25,7 @@ uploaded_file = st.file_uploader("📷 한자/도장 사진 촬영 또는 업로
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="촬영된 이미지", use_column_width=True)
+    st.image(image, caption="촬영된 이미지", use_container_width=True)
     
     # 임시 저장 및 API 전달
     temp_path = "temp_upload.png"
