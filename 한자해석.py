@@ -25,7 +25,7 @@ if uploaded_file is not None:
         with st.spinner("Gemini가 자형 구조와 부수를 시각적으로 분석 중입니다..."):
             try:
                 # Gemini 시각 지능 모델 호출
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-1.5-flash-latest')
                 
                 prompt = """
                 당신은 고문서 및 전서체, 초서체, 인장(도장) 한자 전문가입니다.
