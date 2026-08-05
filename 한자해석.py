@@ -12,7 +12,7 @@ st.title("📱 24/7 전서체·초서체 한자 판독 & 데이터 축적")
 # --- 1. Google Cloud API 인증 설정 (Streamlit Secrets 활용) ---
 if "gcp_service_account" in st.secrets:
     # 클라우드 서버 환경
-    info = json.loads(st.secrets["gcp_service_account"])
+    info = dict(st.secrets["gcp_service_account"])
     credentials = service_account.Credentials.from_service_account_info(info)
     client = vision.ImageAnnotatorClient(credentials=credentials)
 else:
