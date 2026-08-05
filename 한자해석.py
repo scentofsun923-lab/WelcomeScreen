@@ -7,13 +7,13 @@ from datetime import datetime
 st.set_page_config(page_title="24시간 전서체 AI 판독기", page_icon="🈩")
 st.title("📱 24/7 전서체·초서체 AI 판독기 (Gemini Vision)")
 
-# --- Gemini API 키 설정 (단순 문자열 키) ---
+# --- API 키 설정 (AQ로 시작하는 최신 규격 키 사용) ---
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 else:
     st.error("Streamlit Secrets에 GEMINI_API_KEY를 설정해 주세요.")
 
-st.write("Gemini 시각 지능 모델이 전서체, 초서체, 도장의 한자를 정밀 분석합니다.")
+st.write("최신 Gemini 3세대 시각 지능 모델이 전서체, 초서체, 도장의 한자를 정밀 분석합니다.")
 
 uploaded_file = st.file_uploader("📷 한자/도장 사진 촬영 또는 업로드", type=["png", "jpg", "jpeg"])
 
@@ -22,10 +22,10 @@ if uploaded_file is not None:
     st.image(image, caption="촬영된 이미지", use_container_width=True)
 
     if st.button("🔍 Gemini AI 정밀 분석"):
-        with st.spinner("Gemini가 자형 구조와 부수를 시각적으로 분석 중입니다..."):
+        with st.spinner("최신 모델이 자형 구조와 부수를 시각적으로 분석 중입니다..."):
             try:
-                # Gemini 시각 지능 모델 호출
-                model = genai.GenerativeModel('gemini-pro-vision')
+                # 스크린샷에 확인된 최신 3세대 모델명으로 호출합니다!
+                model = genai.GenerativeModel(model_name="gemini-3-flash-preview")
                 
                 prompt = """
                 당신은 고문서 및 전서체, 초서체, 인장(도장) 한자 전문가입니다.
