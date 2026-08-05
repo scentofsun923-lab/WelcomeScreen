@@ -9,24 +9,13 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="24시간 한자 판독기", page_icon="🈩")
 st.title("📱 24/7 전서체·초서체 판독기")
 
-# --- 1. [절대 에러 방지용] Google Cloud API 인증 설정 ---
-if "gcp_service_account" in st.secrets:
-    secret_data = st.secrets["gcp_service_account"]
-    
-    # 설정이 문자열이든 딕셔너리든 스스로 파악해서 에러를 원천 차단합니다.
-    if isinstance(secret_data, str):
-        info = json.loads(secret_data)
-    else:
-        info = dict(secret_data)
-        
-    # 가장 악명 높은 RSA 암호키 줄바꿈(\n) 에러를 강제로 해결합니다.
-    info["private_key"] = info["private_key"].replace('\\n', '\n')
-    
+# --- 1. [최종 대안] 원본 JSON 통째로 읽어오기 ---
+if "google_json" in st.secrets:
+    # 문자열 기호 수정 없이, 안전하게 보호된 원본 JSON을 그대로 딕셔너리로 변환합니다.
+    info = json.loads(st.secrets["google_json"])
     credentials = service_account.Credentials.from_service_account_info(info)
     client = vision.ImageAnnotatorClient(credentials=credentials)
 else:
-    # 로컬 테스트용
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "my_google_api_key.json"
     client = vision.ImageAnnotatorClient()
 
 # --- 2. 스마트폰 전용 화면 구성 ---
